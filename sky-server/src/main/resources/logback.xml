@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<configuration>
+    <substitutionProperty name="directoryPath" value="/log/platform/" />
+    <substitutionProperty name="wholeLogFilePath" value="${directoryPath}trade.log" />
+    <substitutionProperty name="charset" value="UTF-8" />
+
+    <appender name="standardOutput" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d %p [%t] %c (%L\) %m%n</pattern>
+            <charset>${charset}</charset>
+        </encoder>
+    </appender>
+
+    <appender name="wholeLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${wholeLogFilePath}</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${wholeLogFilePath}_%d.%i</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100 MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%date %level [%thread] %class (%line\) %m%n</pattern>
+            <charset>${charset}</charset>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="standardOutput" />
+    </root>
+
+<!--    <logger name="com.zte.iptv" level="debug">-->
+<!--        <appender-ref ref="wholeLog" />-->
+<!--    </logger>-->
+
+</configuration>
