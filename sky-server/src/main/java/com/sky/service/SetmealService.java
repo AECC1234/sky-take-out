@@ -2,7 +2,9 @@ package com.sky.service;
 
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.sky.dto.SetmealDTO;
+import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
+import com.sky.result.PageResult;
 
 public interface SetmealService extends IService<Setmeal> {
     /**
@@ -10,4 +12,11 @@ public interface SetmealService extends IService<Setmeal> {
      * @param setmealDTO
      */
     void saveWithDish(SetmealDTO setmealDTO);
+
+    /**
+     * 分页查询套餐
+     * @param setmealPageQueryDTO
+     * @return
+     */
+    PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
 }
