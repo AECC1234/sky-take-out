@@ -1,5 +1,6 @@
 package com.sky.entity;
 
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,12 +14,15 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
+@TableName("setmeal")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Setmeal implements Serializable {
 
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     //分类id
@@ -39,11 +43,15 @@ public class Setmeal implements Serializable {
     //图片
     private String image;
 
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
+    @TableField(fill = FieldFill.INSERT)
     private Long createUser;
 
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 }

@@ -120,4 +120,13 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 			Db.saveBatch(flavors);
 		}
 	}
+
+	@Override
+	public List<Dish> listByCategoryId(Long categoryId) {
+        return lambdaQuery()
+				.eq(categoryId != null, Dish::getCategoryId, categoryId)
+                .eq(Dish::getStatus, StatusConstant.ENABLE)
+				.orderByDesc(Dish::getCreateUser)
+                .list();
+	}
 }
