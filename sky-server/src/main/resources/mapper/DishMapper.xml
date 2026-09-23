@@ -3,4 +3,20 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.DishMapper">
 
+    <select id="pageQuery" resultType="com.sky.vo.DishVO">
+        SELECT dish.*, category.name AS categoryName FROM dish
+            LEFT OUTER JOIN category ON dish.category_id = category.id
+        <where>
+            <if test="name != null and name != ''">
+                AND dish.name LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="categoryId != null">
+                AND dish.category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                AND dish.status = #{status}
+            </if>
+        </where>
+        ORDER BY dish.create_time DESC
+    </select>
 </mapper>
