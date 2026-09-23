@@ -81,4 +81,43 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 		getBaseMapper().deleteByIds(ids);
 		Db.lambdaUpdate(DishFlavor.class).in(DishFlavor::getDishId, ids).remove();
 	}
+
+	@Override
+	public DishVO getByIdWithFlavor(Long id) {
+		// 先查菜品表
+		Dish dish = getById(id);
+		// 再查口味表
+		List<DishFlavor> dishFlavors = Db.lambdaQuery(DishFlavor.class).eq(DishFlavor::getDishId, id).list();
+		// 封装
+		DishVO dishVO = new DishVO();
+		dishVO = BeanUtil.copyProperties(dish, DishVO.class);
+		dishVO.setFlavors(dishFlavors);
+
+		return dishVO;
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public void updateWithFlavor(DishDTO dishDTO) {
+		// 修改菜品基本信息
+		Dish dish = BeanUtil.copyProperties(dishDTO, Dish.class);
+		lambdaUpdate().eq(Dish::getId, dish.getId())
+				.set(dish.getName() != null && !dish.getName().isBlank(), Dish::getName, dish.getName())
+				.set(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId())
+				.set(dish.getPrice() != null, Dish::getPrice, dish.getPrice())
+				.set(dish.getImage() != null && !dish.getImage().isBlank(), Dish::getImage, dish.getImage())
+				.set(dish.getDescription() != null && !dish.getDescription().isBlank(), Dish::getDescription, dish.getDescription())
+				.set(dish.getStatus() != null, Dish::getStatus, dish.getStatus())
+				.update();
+		// 删除原有口味表
+		Db.lambdaUpdate(DishFlavor.class).eq(DishFlavor::getDishId, dish.getId()).remove();
+		// 判断是否有口味数据
+		List<DishFlavor> flavors = dishDTO.getFlavors();
+		if (flavors != null && !flavors.isEmpty()) {
+			// 重新设置DishID
+			flavors.forEach(dishFlavor -> dishFlavor.setDishId(dishDTO.getId()));
+			// 重新插入口味数据
+			Db.saveBatch(flavors);
+		}
+	}
 }
