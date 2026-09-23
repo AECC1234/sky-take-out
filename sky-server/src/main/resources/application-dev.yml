@@ -6,3 +6,8 @@ sky:
     database: sky_take_out
     username: aecc1234
     password: wjq5028841
+  minio:
+    bucket: skytakeout
+    access-key: W1QtaZSdwIuP92tacvDq
+    secret-key: rrHDK3gfolmOdMXyu1x6UPxUj16tQ3s2X4mlfTOA
+    endpoint: http://localhost:9000

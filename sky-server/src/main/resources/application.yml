@@ -7,11 +7,10 @@ spring:
   main:
     allow-circular-references: true
   datasource:
-    druid:
-      driver-class-name: ${sky.datasource.driver-class-name}
-      url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
-      username: ${sky.datasource.username}
-      password: ${sky.datasource.password}
+    driver-class-name: ${sky.datasource.driver-class-name}
+    url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${sky.datasource.username}
+    password: ${sky.datasource.password}
 
 mybatis:
   #mapper配置文件
@@ -20,6 +19,21 @@ mybatis:
   configuration:
     #开启驼峰命名
     map-underscore-to-camel-case: true
+
+mybatis-plus:
+  # 实体类包路径
+  type-aliases-package: com.sky.entity
+  configuration:
+    # 开启下划线转驼峰（数据库字段 user_name → 实体类属性 userName）
+    map-underscore-to-camel-case: true
+    # 开发环境开启 SQL 日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+  global-config:
+    db-config:
+      id-type: auto
+      update-strategy: not_null
+#      logic-delete-field: isDeleted
 
 logging:
   level:
@@ -37,3 +51,8 @@ sky:
     admin-ttl: 86400000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
+  minio:
+    endpoint: ${sky.minio.endpoint}
+    access-key: ${sky.minio.access-key}
+    secret-key: ${sky.minio.secret-key}
+    bucket: ${sky.minio.bucket}
