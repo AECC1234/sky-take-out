@@ -11,3 +11,8 @@ sky:
     access-key: W1QtaZSdwIuP92tacvDq
     secret-key: rrHDK3gfolmOdMXyu1x6UPxUj16tQ3s2X4mlfTOA
     endpoint: http://localhost:9000
+  redis:
+    host: 192.168.137.66
+    port: 6379
+    password: AcU6m8kio
+    database: 0
