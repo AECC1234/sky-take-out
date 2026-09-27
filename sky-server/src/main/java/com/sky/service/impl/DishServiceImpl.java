@@ -15,16 +15,19 @@ import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.ResultHandler;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,6 +37,9 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
 	@Autowired
 	private DishMapper dishMapper;
+
+	@Autowired
+	private DishFlavorMapper dishFlavorMapper;
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -128,5 +134,37 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
                 .eq(Dish::getStatus, StatusConstant.ENABLE)
 				.orderByDesc(Dish::getCreateUser)
                 .list();
+	}
+
+	/**
+	 * 条件查询菜品和口味
+	 * @param dish
+	 * @return
+	 */
+	public List<DishVO> listWithFlavor(Dish dish) {
+//		List<Dish> dishList = dishMapper.list(dish);
+		List<Dish> dishList = lambdaQuery()
+				.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId())
+				.eq(Dish::getStatus, dish.getStatus())
+				.orderByDesc(Dish::getCreateUser)
+				.list();
+
+		List<DishVO> dishVOList = new ArrayList<>();
+
+		for (Dish d : dishList) {
+			DishVO dishVO = new DishVO();
+			BeanUtils.copyProperties(d,dishVO);
+
+			//根据菜品id查询对应的口味
+//			List<DishFlavor> flavors = dishFlavorMapper.getByDishId(d.getId());
+			List<DishFlavor> flavors = Db.lambdaQuery(DishFlavor.class)
+					.eq(DishFlavor::getDishId, d.getId())
+					.list();
+
+			dishVO.setFlavors(flavors);
+			dishVOList.add(dishVO);
+		}
+
+		return dishVOList;
 	}
 }
