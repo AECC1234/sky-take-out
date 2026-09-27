@@ -167,4 +167,11 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
 		return dishVOList;
 	}
+
+    @Override
+    public void startOrStop(Integer status, Long dishId) {
+		lambdaUpdate().set(Dish::getStatus, status)
+				.eq(Dish::getId, dishId)
+				.update();
+    }
 }

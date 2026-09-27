@@ -60,4 +60,12 @@ public interface DishService extends IService<Dish> {
      * @return
      */
     List<DishVO> listWithFlavor(Dish dish);
+
+    /**
+     * 起售/停售菜品
+     *
+     * @param status
+     * @param dishId
+     */
+    void startOrStop(Integer status, Long dishId);
 }
