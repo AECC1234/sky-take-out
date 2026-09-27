@@ -1,5 +1,6 @@
 package com.sky.entity;
 
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,12 +12,15 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+@TableName("user")
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements Serializable {
 
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     //微信用户唯一标识
@@ -38,5 +42,6 @@ public class User implements Serializable {
     private String avatar;
 
     //注册时间
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }
