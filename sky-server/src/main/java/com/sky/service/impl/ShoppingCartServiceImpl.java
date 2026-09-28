@@ -13,6 +13,7 @@ import com.sky.service.ShoppingCartService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, ShoppingCart> implements ShoppingCartService {
@@ -31,9 +32,9 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
                 .one();
         // 存在则+1
         if (cart != null) {
-            cart.setNumber(cart.getNumber() + 1);
-            lambdaUpdate().set(ShoppingCart::getNumber, cart.getNumber())
+            lambdaUpdate().setSql("number = number + 1")
                     .eq(ShoppingCart::getUserId, cart.getUserId())
+                    .eq(ShoppingCart::getId, cart.getId())
                     .update();
         } else {
             // 不存在则新增1条
@@ -68,5 +69,28 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
     @Override
     public void cleanShoppingCart() {
         lambdaUpdate().eq(ShoppingCart::getUserId, BaseContext.getCurrentId()).remove();
+    }
+
+    @Override
+    public void subShoppingCart(ShoppingCartDTO shoppingCartDTO) {
+        // 查询商品
+        ShoppingCart cart = lambdaQuery()
+                .eq(ShoppingCart::getUserId, BaseContext.getCurrentId())
+                .eq(shoppingCartDTO.getSetmealId() != null, ShoppingCart::getSetmealId, shoppingCartDTO.getSetmealId())
+                .eq(shoppingCartDTO.getDishId() != null, ShoppingCart::getDishId, shoppingCartDTO.getDishId())
+                .eq(shoppingCartDTO.getDishFlavor() != null, ShoppingCart::getDishFlavor, shoppingCartDTO.getDishFlavor())
+                .one();
+
+        if (cart == null) return;
+
+        // 判断数量是否等于1
+        if (Objects.equals(cart.getNumber(), 1)) {
+            removeById(cart.getId());
+        } else {
+            lambdaUpdate().setSql("number = number - 1")
+                    .eq(ShoppingCart::getUserId, BaseContext.getCurrentId())
+                    .eq(ShoppingCart::getId, cart.getId())
+                    .update();
+        }
     }
 }
