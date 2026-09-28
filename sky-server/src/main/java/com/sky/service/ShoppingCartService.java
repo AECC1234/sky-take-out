@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.spring.service.IService;
 import com.sky.dto.ShoppingCartDTO;
 import com.sky.entity.ShoppingCart;
 
+import java.util.List;
+
 public interface ShoppingCartService extends IService<ShoppingCart> {
 
     /**
@@ -11,4 +13,10 @@ public interface ShoppingCartService extends IService<ShoppingCart> {
      * @param shoppingCartDTO
      */
     void addShoppingCart(ShoppingCartDTO shoppingCartDTO);
+
+    /**
+     * 查看购物车
+     * @return
+     */
+    List<ShoppingCart> showShoppingCart();
 }

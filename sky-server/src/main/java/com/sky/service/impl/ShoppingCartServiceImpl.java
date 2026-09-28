@@ -59,4 +59,9 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
             getBaseMapper().insert(shoppingCart);
         }
     }
+
+    @Override
+    public List<ShoppingCart> showShoppingCart() {
+        return lambdaQuery().eq(ShoppingCart::getUserId, BaseContext.getCurrentId()).list();
+    }
 }
