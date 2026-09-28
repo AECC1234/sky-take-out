@@ -64,4 +64,9 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
     public List<ShoppingCart> showShoppingCart() {
         return lambdaQuery().eq(ShoppingCart::getUserId, BaseContext.getCurrentId()).list();
     }
+
+    @Override
+    public void cleanShoppingCart() {
+        lambdaUpdate().eq(ShoppingCart::getUserId, BaseContext.getCurrentId()).remove();
+    }
 }
