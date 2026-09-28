@@ -136,11 +136,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
                 .list();
 	}
 
-	/**
-	 * 条件查询菜品和口味
-	 * @param dish
-	 * @return
-	 */
+	@Override
 	public List<DishVO> listWithFlavor(Dish dish) {
 //		List<Dish> dishList = dishMapper.list(dish);
 		List<Dish> dishList = lambdaQuery()
