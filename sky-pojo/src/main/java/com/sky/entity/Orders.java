@@ -1,5 +1,6 @@
 package com.sky.entity;
 
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @Builder
+@TableName("orders")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Orders implements Serializable {
@@ -35,8 +37,10 @@ public class Orders implements Serializable {
     public static final Integer PAID = 1;
     public static final Integer REFUND = 2;
 
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     //订单号

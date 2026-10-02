@@ -1,5 +1,6 @@
 package com.sky.entity;
 
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,12 +13,15 @@ import java.io.Serializable;
  */
 @Data
 @Builder
+@TableName("address_book")
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddressBook implements Serializable {
 
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     //用户id
