@@ -56,4 +56,11 @@ public interface OrderService extends IService<Orders> {
      * @param id
      */
     void repetition(Integer id);
+
+    /**
+     * 订单的分页条件查询
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
 }

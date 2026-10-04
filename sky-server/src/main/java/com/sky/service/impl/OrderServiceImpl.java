@@ -84,6 +84,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         for (ShoppingCart shoppingCart : carts) {
             OrderDetail orderDetail = BeanUtil.copyProperties(shoppingCart, OrderDetail.class);
             orderDetail.setOrderId(orders.getId());
+            orderDetail.setId(null);
             orderDetails.add(orderDetail);
         }
 
@@ -227,5 +228,34 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         carts.forEach(shoppingCart -> shoppingCart.setUserId(BaseContext.getCurrentId()));
 
         Db.saveBatch(carts);
+    }
+
+    @Override
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+
+        Page<Orders> page = new Page<>(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        List<Orders> orders = lambdaQuery()
+                .eq(ordersPageQueryDTO.getStatus() != null, Orders::getStatus, ordersPageQueryDTO.getStatus())
+                .like(ordersPageQueryDTO.getPhone() != null, Orders::getPhone, ordersPageQueryDTO.getPhone())
+                .like(ordersPageQueryDTO.getNumber() != null, Orders::getNumber, ordersPageQueryDTO.getNumber())
+                .ge(ordersPageQueryDTO.getBeginTime() != null, Orders::getOrderTime, ordersPageQueryDTO.getBeginTime())
+                .le(ordersPageQueryDTO.getEndTime() != null, Orders::getOrderTime, ordersPageQueryDTO.getEndTime())
+                .list(page);
+        List<OrderVO> orderVOS = BeanUtil.copyToList(orders, OrderVO.class);
+
+        for (OrderVO orderVO : orderVOS) {
+            // 先查询订单对应的菜品
+            List<OrderDetail> orderDetails = Db.lambdaQuery(OrderDetail.class)
+                    .eq(OrderDetail::getOrderId, orderVO.getId())
+                    .list();
+            // 再拼接字符串
+            StringBuilder sb = new StringBuilder();
+            orderDetails.forEach(orderDetail -> sb.append(orderDetail.getName()).append("*")
+                    .append(orderDetail.getNumber()).append(";"));
+            // 最后再赋值
+            orderVO.setOrderDishes(sb.toString());
+        }
+
+        return new PageResult(page.getTotal(), orderVOS);
     }
 }
