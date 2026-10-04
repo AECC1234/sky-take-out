@@ -19,5 +19,5 @@ public interface OrderMapper extends BaseMapper<Orders> {
      * 修改订单信息
      * @param orders
      */
-    void update(Orders orders);
+//    void update(Orders orders);
 }
