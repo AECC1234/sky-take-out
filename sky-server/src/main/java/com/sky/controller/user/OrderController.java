@@ -66,21 +66,21 @@ public class OrderController {
 
     @GetMapping("/orderDetail/{id}")
     @ApiOperation("查询订单详细")
-    public Result<OrderVO> details(@PathVariable("id") Integer id) {
+    public Result<OrderVO> details(@PathVariable("id") Long id) {
         log.info("查询订单明细: {}", id);
         return Result.success(orderService.details(id));
     }
 
     @PutMapping("/cancel/{id}")
     @ApiOperation("取消订单")
-    public Result cancel(@PathVariable Integer id) {
+    public Result cancel(@PathVariable Long id) {
         orderService.cancel(id);
         return Result.success();
     }
 
     @PostMapping("/repetition/{id}")
     @ApiOperation("再来一单")
-    public Result repetition(@PathVariable Integer id) {
+    public Result repetition(@PathVariable Long id) {
         orderService.repetition(id);
         return Result.success();
     }

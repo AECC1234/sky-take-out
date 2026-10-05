@@ -1,6 +1,7 @@
 package com.sky.service;
 
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
@@ -44,19 +45,19 @@ public interface OrderService extends IService<Orders> {
      * @param id
      * @return
      */
-    OrderVO details(Integer id);
+    OrderVO details(Long id);
 
     /**
      * 取消订单
      * @param id
      */
-    void cancel(Integer id);
+    void cancel(Long id);
 
     /**
      * 再来一单
      * @param id
      */
-    void repetition(Integer id);
+    void repetition(Long id);
 
     /**
      * 订单的分页条件查询
@@ -70,4 +71,10 @@ public interface OrderService extends IService<Orders> {
      * @return
      */
     OrderStatisticsVO statistics();
+
+    /**
+     * 接单
+     * @param ordersConfirmDTO
+     */
+    void confirm(OrdersConfirmDTO ordersConfirmDTO);
 }

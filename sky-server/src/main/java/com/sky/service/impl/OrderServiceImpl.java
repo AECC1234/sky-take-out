@@ -1,7 +1,6 @@
 package com.sky.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -13,6 +12,7 @@ import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
@@ -20,7 +20,6 @@ import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
 import com.sky.exception.ShoppingCartBusinessException;
-import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
@@ -29,7 +28,6 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
-import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -188,7 +186,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     }
 
     @Override
-    public OrderVO details(Integer id) {
+    public OrderVO details(Long id) {
         Orders orders = getById(id);
         List<OrderDetail> orderDetails = Db.lambdaQuery(OrderDetail.class).eq(OrderDetail::getOrderId, id).list();
         OrderVO orderVO = BeanUtil.copyProperties(orders, OrderVO.class);
@@ -198,7 +196,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     }
 
     @Override
-    public void cancel(Integer id) {
+    public void cancel(Long id) {
         Orders orders = getById(id);
 
         if (orders == null) {
@@ -223,7 +221,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     }
 
     @Override
-    public void repetition(Integer id) {
+    public void repetition(Long id) {
         List<OrderDetail> orderDetails = Db.lambdaQuery(OrderDetail.class).eq(OrderDetail::getOrderId, id).list();
 
         List<ShoppingCart> carts = BeanUtil.copyToList(orderDetails, ShoppingCart.class);
@@ -269,5 +267,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         statisticsVO.setToBeConfirmed(lambdaQuery().eq(Orders::getStatus, Orders.TO_BE_CONFIRMED).count().intValue());
 
         return statisticsVO;
+    }
+
+    @Override
+    public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
+        lambdaUpdate().set(Orders::getStatus, Orders.CONFIRMED)
+                .eq(Orders::getId, ordersConfirmDTO.getId())
+                .update();
     }
 }
