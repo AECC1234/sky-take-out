@@ -7,15 +7,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersConfirmDTO;
-import com.sky.dto.OrdersPageQueryDTO;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
@@ -157,6 +155,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
 
         // 构建分页查询条件
         Page<Orders> page = new Page<>(pageQueryDTO.getPage(), pageQueryDTO.getPageSize());
+
+        // 构建排序条件
+        page.addOrder(OrderItem.desc("order_time"));
+
         LambdaQueryWrapper<Orders> wrapper = new QueryWrapper<Orders>().lambda()
               .eq(Orders::getUserId, pageQueryDTO.getUserId())
               .eq(pageQueryDTO.getStatus() != null, Orders::getStatus, pageQueryDTO.getStatus())
@@ -234,6 +236,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
 
         Page<Orders> page = new Page<>(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        page.addOrder(OrderItem.desc("order_time"));
+
         List<Orders> orders = lambdaQuery()
                 .eq(ordersPageQueryDTO.getStatus() != null, Orders::getStatus, ordersPageQueryDTO.getStatus())
                 .like(ordersPageQueryDTO.getPhone() != null, Orders::getPhone, ordersPageQueryDTO.getPhone())
@@ -273,6 +277,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
         lambdaUpdate().set(Orders::getStatus, Orders.CONFIRMED)
                 .eq(Orders::getId, ordersConfirmDTO.getId())
+                .update();
+    }
+
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+        Orders orders = getById(ordersRejectionDTO.getId());
+
+        if (!Objects.equals(orders.getStatus(), Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+//        if (Objects.equals(orders.getPayStatus(), Orders.PAID)) {
+//
+//        }
+
+        lambdaUpdate().eq(Orders::getId, ordersRejectionDTO.getId())
+                .set(Orders::getStatus, Orders.CANCELLED)
+                .set(Orders::getRejectionReason, Objects.requireNonNull(ordersRejectionDTO.getRejectionReason()))
+                .set(Orders::getCancelTime, LocalDateTime.now())
                 .update();
     }
 }
