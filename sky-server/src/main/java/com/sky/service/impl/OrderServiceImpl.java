@@ -298,4 +298,31 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
                 .set(Orders::getCancelTime, LocalDateTime.now())
                 .update();
     }
+
+    @Override
+    public void delivery(Long id) {
+        Orders orders = getById(id);
+
+        if (!Objects.equals(orders.getStatus(), Orders.CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        lambdaUpdate().eq(Orders::getId, id)
+                .set(Orders::getStatus, Orders.DELIVERY_IN_PROGRESS)
+                .set(Orders::getDeliveryTime, LocalDateTime.now())
+                .update();
+    }
+
+    @Override
+    public void complete(Long id) {
+        Orders orders = getById(id);
+
+        if (!Objects.equals(orders.getStatus(), Orders.DELIVERY_IN_PROGRESS)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        lambdaUpdate().eq(Orders::getId, id)
+                .set(Orders::getStatus, Orders.COMPLETED)
+                .update();
+    }
 }
