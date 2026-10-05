@@ -26,8 +26,10 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -257,5 +259,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }
 
         return new PageResult(page.getTotal(), orderVOS);
+    }
+
+    @Override
+    public OrderStatisticsVO statistics() {
+        OrderStatisticsVO statisticsVO = new OrderStatisticsVO();
+        statisticsVO.setDeliveryInProgress(lambdaQuery().eq(Orders::getStatus, Orders.DELIVERY_IN_PROGRESS).count().intValue());
+        statisticsVO.setConfirmed(lambdaQuery().eq(Orders::getStatus, Orders.CONFIRMED).count().intValue());
+        statisticsVO.setToBeConfirmed(lambdaQuery().eq(Orders::getStatus, Orders.TO_BE_CONFIRMED).count().intValue());
+
+        return statisticsVO;
     }
 }
