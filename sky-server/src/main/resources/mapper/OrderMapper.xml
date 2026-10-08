@@ -33,4 +33,7 @@
 <!--        where id = #{id}-->
 <!--    </update>-->
 
+    <select id="sumTurnover" resultType="java.lang.Double">
+        SELECT SUM(amount) FROM orders ${ew.customSqlSegment}
+    </select>
 </mapper>
