@@ -295,6 +295,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
         Orders orders = getById(ordersRejectionDTO.getId());
 
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
         if (!Objects.equals(orders.getStatus(), Orders.TO_BE_CONFIRMED)) {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
@@ -314,6 +318,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     public void delivery(Long id) {
         Orders orders = getById(id);
 
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
         if (!Objects.equals(orders.getStatus(), Orders.CONFIRMED)) {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
@@ -328,6 +336,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     public void complete(Long id) {
         Orders orders = getById(id);
 
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
         if (!Objects.equals(orders.getStatus(), Orders.DELIVERY_IN_PROGRESS)) {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
@@ -335,5 +347,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         lambdaUpdate().eq(Orders::getId, id)
                 .set(Orders::getStatus, Orders.COMPLETED)
                 .update();
+    }
+
+    @Override
+    public void reminder(Long id) {
+        Orders orders = getById(id);
+
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", 2);
+        jsonObject.put("orderId", orders.getId());
+        jsonObject.put("content", "订单号: " + orders.getNumber());
+        webSocketServer.sendToAllClient(jsonObject.toJSONString());
     }
 }
