@@ -2,16 +2,19 @@ package com.sky.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.entity.User;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,13 +41,7 @@ public class ReportServiceImpl implements ReportService {
         TurnoverReportVO reportVO = new TurnoverReportVO();
 
         // 计算日期
-        List<LocalDate> dateList = new ArrayList<>();
-        dateList.add(begin);
-
-        while (!begin.equals(end)) {
-            begin = begin.plusDays(1);
-            dateList.add(begin);
-        }
+        List<LocalDate> dateList = loopCalendar(begin, end);
 
         reportVO.setDateList(String.join(",", dateList.stream()
                         .map(date -> DateTimeFormatter.ofPattern("MM-dd").format(date)).toList()));
@@ -74,13 +71,7 @@ public class ReportServiceImpl implements ReportService {
     public UserReportVO getUserStatistics(LocalDate begin, LocalDate end) {
 
         // 计算日期
-        List<LocalDate> dateList = new ArrayList<>();
-        dateList.add(begin);
-
-        while (!begin.equals(end)) {
-            begin = begin.plusDays(1);
-            dateList.add(begin);
-        }
+        List<LocalDate> dateList = loopCalendar(begin, end);
 
         // 每天新增/总量
         List<Integer> newUserList = new ArrayList<>();
@@ -112,13 +103,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public OrderReportVO getOrderStatistics(LocalDate begin, LocalDate end) {
         // 计算日期
-        List<LocalDate> dateList = new ArrayList<>();
-        dateList.add(begin);
-
-        while (!begin.equals(end)) {
-            begin = begin.plusDays(1);
-            dateList.add(begin);
-        }
+        List<LocalDate> dateList = loopCalendar(begin, end);
 
         List<Integer> totalOrders = new ArrayList<>();
         List<Integer> validOrders = new ArrayList<>();
@@ -156,6 +141,34 @@ public class ReportServiceImpl implements ReportService {
                 .totalOrderCount(totalOrderCount)
                 .validOrderCount(validOrderCount)
                 .orderCompletionRate(orderCompletionRate)
+                .build();
+    }
+
+    @NotNull
+    private static List<LocalDate> loopCalendar(LocalDate begin, LocalDate end) {
+        List<LocalDate> dateList = new ArrayList<>();
+        dateList.add(begin);
+
+        while (!begin.equals(end)) {
+            begin = begin.plusDays(1);
+            dateList.add(begin);
+        }
+        return dateList;
+    }
+
+    @Override
+    public SalesTop10ReportVO getSalesTop10Statistics(LocalDate begin, LocalDate end) {
+        // 计算日期
+        LocalDateTime beginTime = begin.atStartOfDay();
+        LocalDateTime endTime = LocalDateTime.of(end, LocalTime.MAX);
+
+        List<GoodsSalesDTO> salesTop10 = orderMapper.getSalesTop10(beginTime, endTime);
+        List<String> names = salesTop10.stream().map(GoodsSalesDTO::getName).toList();
+        List<Integer> numbers = salesTop10.stream().map(GoodsSalesDTO::getNumber).toList();
+
+        return SalesTop10ReportVO.builder()
+                .nameList(StringUtils.join(names, ","))
+                .numberList(StringUtils.join(numbers, ","))
                 .build();
     }
 }
