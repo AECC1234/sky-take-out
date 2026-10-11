@@ -33,4 +33,7 @@
             </if>
         </where>
     </select>
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(id) FROM setmeal ${ew.customSqlSegment}
+    </select>
 </mapper>

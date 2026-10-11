@@ -83,10 +83,10 @@ public class ReportServiceImpl implements ReportService {
 
             LambdaQueryWrapper<User> wrapper = new QueryWrapper<User>().lambda()
                     .le(User::getCreateTime, endTime);
-            Integer totalUser = userMapper.countUsers(wrapper);
+            Integer totalUser = userMapper.count(wrapper);
 
             wrapper.ge(User::getCreateTime, beginTime);
-            Integer newUser = userMapper.countUsers(wrapper);
+            Integer newUser = userMapper.count(wrapper);
 
             totalUserList.add(totalUser);
             newUserList.add(newUser);

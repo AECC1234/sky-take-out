@@ -15,5 +15,5 @@ public interface UserMapper extends BaseMapper<User> {
      * @param wrapper
      * @return
      */
-    Integer countUsers(@Param(Constants.WRAPPER)LambdaQueryWrapper<User> wrapper);
+    Integer count(@Param(Constants.WRAPPER)LambdaQueryWrapper<User> wrapper);
 }

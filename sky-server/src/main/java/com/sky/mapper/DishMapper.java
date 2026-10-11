@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.github.pagehelper.Page;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
+import com.sky.entity.User;
 import com.sky.vo.DishVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -28,4 +29,11 @@ public interface DishMapper extends BaseMapper<Dish> {
      * @return
      */
     Page<DishVO> pageQuery(DishPageQueryDTO dishPageQueryDTO);
+
+    /**
+     * 数量
+     * @param wrapper
+     * @return
+     */
+    Integer count(@Param(Constants.WRAPPER)LambdaQueryWrapper<Dish> wrapper);
 }
