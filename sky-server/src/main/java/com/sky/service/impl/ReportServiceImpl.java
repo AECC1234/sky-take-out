@@ -7,13 +7,12 @@ import com.sky.entity.User;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
-import com.sky.service.UserService;
+import com.sky.vo.OrderReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -61,7 +60,7 @@ public class ReportServiceImpl implements ReportService {
                     .eq(Orders::getStatus, Orders.COMPLETED)
                     .between(Orders::getOrderTime, beginTime, endTime);
 
-            Double turnover = orderMapper.sumTurnover(wrapper);
+            Double turnover = orderMapper.sum(wrapper);
             turnover = turnover == null ? 0.0 : turnover;
             turnoverList.add(turnover);
         }
@@ -107,6 +106,56 @@ public class ReportServiceImpl implements ReportService {
                         .map(date -> DateTimeFormatter.ofPattern("MM-dd").format(date)).toList()))
                 .totalUserList(StringUtils.join(totalUserList, ","))
                 .newUserList(StringUtils.join(newUserList, ","))
+                .build();
+    }
+
+    @Override
+    public OrderReportVO getOrderStatistics(LocalDate begin, LocalDate end) {
+        // 计算日期
+        List<LocalDate> dateList = new ArrayList<>();
+        dateList.add(begin);
+
+        while (!begin.equals(end)) {
+            begin = begin.plusDays(1);
+            dateList.add(begin);
+        }
+
+        List<Integer> totalOrders = new ArrayList<>();
+        List<Integer> validOrders = new ArrayList<>();
+
+        // 遍历
+        for (LocalDate date : dateList) {
+            LocalDateTime beginTime = date.atStartOfDay();
+            LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+
+            LambdaQueryWrapper<Orders> wrapper = new QueryWrapper<Orders>().lambda();
+
+            wrapper.between(Orders::getOrderTime, beginTime, endTime);
+            totalOrders.add(orderMapper.count(wrapper));
+
+            wrapper.eq(Orders::getStatus, Orders.COMPLETED);
+            validOrders.add(orderMapper.count(wrapper));
+        }
+
+        // 订单总数
+        Integer totalOrderCount = totalOrders.stream().reduce(Integer::sum).get();
+        Integer validOrderCount = validOrders.stream().reduce(Integer::sum).get();
+
+        // 有效订单率
+        double orderCompletionRate = 0.0;
+
+        if (totalOrderCount != 0) {
+            orderCompletionRate = (double) validOrderCount / totalOrderCount;
+        }
+
+        return OrderReportVO.builder()
+                .dateList(String.join(",", dateList.stream()
+                        .map(date -> DateTimeFormatter.ofPattern("MM-dd").format(date)).toList()))
+                .orderCountList(StringUtils.join(totalOrders, ","))
+                .validOrderCountList(StringUtils.join(validOrders, ","))
+                .totalOrderCount(totalOrderCount)
+                .validOrderCount(validOrderCount)
+                .orderCompletionRate(orderCompletionRate)
                 .build();
     }
 }

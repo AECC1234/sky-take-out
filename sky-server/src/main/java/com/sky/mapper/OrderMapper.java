@@ -19,11 +19,18 @@ public interface OrderMapper extends BaseMapper<Orders> {
     Orders getByNumber(String orderNumber);
 
     /**
-     * 根据条件查询营业额
+     * 求和
      * @param wrapper
      * @return
      */
-    Double sumTurnover(@Param(Constants.WRAPPER) LambdaQueryWrapper<Orders> wrapper);
+    Double sum(@Param(Constants.WRAPPER) LambdaQueryWrapper<Orders> wrapper);
+
+    /**
+     * 统计总数量
+     * @param wrapper
+     * @return
+     */
+    Integer count(@Param(Constants.WRAPPER) LambdaQueryWrapper<Orders> wrapper);
 
     /**
      * 修改订单信息
