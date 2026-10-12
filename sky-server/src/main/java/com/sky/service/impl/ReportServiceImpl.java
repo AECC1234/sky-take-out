@@ -8,22 +8,28 @@ import com.sky.entity.User;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
-import com.sky.vo.OrderReportVO;
-import com.sky.vo.SalesTop10ReportVO;
-import com.sky.vo.TurnoverReportVO;
-import com.sky.vo.UserReportVO;
+import com.sky.service.WorkspaceService;
+import com.sky.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -34,6 +40,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private WorkspaceService workspaceService;
 
     @Override
     public TurnoverReportVO getTurnoverStatistics(LocalDate begin, LocalDate end) {
@@ -170,5 +179,59 @@ public class ReportServiceImpl implements ReportService {
                 .nameList(StringUtils.join(names, ","))
                 .numberList(StringUtils.join(numbers, ","))
                 .build();
+    }
+
+    @Override
+    public void exportBussinessData(HttpServletResponse response) {
+        // 获取数据，查询数据库
+        // 最近30天
+        LocalDate dateBegin = LocalDate.now().minusDays(30);
+        LocalDate dateEnd = LocalDate.now().minusDays(1);
+
+        LocalDateTime beginTime = LocalDateTime.of(dateBegin, LocalTime.MIN);
+        LocalDateTime endTime = LocalDateTime.of(dateEnd, LocalTime.MAX);
+
+        BusinessDataVO businessData = workspaceService.getBusinessData(beginTime, endTime);
+        // 写入execl文件
+        try (
+                InputStream is = this.getClass().getClassLoader().getResourceAsStream("template/运营数据报表模板.xlsx");
+                XSSFWorkbook excel = new XSSFWorkbook(Objects.requireNonNull(is));
+                OutputStream outputStream = response.getOutputStream()
+        ) {
+            // 填充概览数据
+            XSSFSheet sheet = excel.getSheet("Sheet1");
+            sheet.getRow(1).getCell(1).setCellValue("时间: " + dateBegin + " 至 " + dateEnd);
+            sheet.getRow(3).getCell(2).setCellValue(businessData.getTurnover());
+            sheet.getRow(3).getCell(4).setCellValue(businessData.getOrderCompletionRate());
+            sheet.getRow(3).getCell(6).setCellValue(businessData.getNewUsers());
+            sheet.getRow(4).getCell(2).setCellValue(businessData.getValidOrderCount());
+            sheet.getRow(4).getCell(4).setCellValue(businessData.getUnitPrice());
+
+            // 填充明细数据
+            List<LocalDate> dateList = loopCalendar(dateBegin, dateEnd);
+            int currentRowIndex = 7;
+            for (LocalDate date : dateList) {
+                beginTime = LocalDateTime.of(date, LocalTime.MIN);
+                endTime = LocalDateTime.of(date, LocalTime.MAX);
+                BusinessDataVO data = workspaceService.getBusinessData(beginTime, endTime);
+
+
+                XSSFRow row = sheet.getRow(currentRowIndex);
+                row.getCell(1).setCellValue(date.toString());
+                row.getCell(2).setCellValue(data.getTurnover());
+                row.getCell(3).setCellValue(data.getValidOrderCount());
+                row.getCell(4).setCellValue(data.getOrderCompletionRate());
+                row.getCell(5).setCellValue(data.getUnitPrice());
+                row.getCell(6).setCellValue(data.getNewUsers());
+
+                currentRowIndex++;
+            }
+
+            // 下载至浏览器
+            excel.write(outputStream);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

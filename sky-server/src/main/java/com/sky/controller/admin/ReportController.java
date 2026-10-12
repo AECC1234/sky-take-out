@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
 @Slf4j
@@ -64,5 +65,12 @@ public class ReportController {
     ) {
         log.info("销量top10数据统计，起止日期: {} -> {}", begin, end);
         return Result.success(reportService.getSalesTop10Statistics(begin, end));
+    }
+
+    @GetMapping("/export")
+    @ApiOperation("导出最近30天的运营报表")
+    public void export(HttpServletResponse response) {
+        log.info("导出最近三十天的运营报表");
+        reportService.exportBussinessData(response);
     }
 }
